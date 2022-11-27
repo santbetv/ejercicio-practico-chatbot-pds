@@ -11,7 +11,7 @@ def on_command_start(message):
     sleep(1)
     bot.send_message(
         message.chat.id,
-        "Hola, soy un \U0001F916, ¿cómo estás?",
+        "Hola, soy un \U0001F916 de restaurante, ¿cómo estás?",
         parse_mode="Markdown") 
 
 #########################################################
