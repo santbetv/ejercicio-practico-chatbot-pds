@@ -4,4 +4,5 @@ idna==3.4
 pyTelegramBotAPI==4.7.1
 python-decouple==3.6
 requests==2.27.1
+SQLAlchemy==1.4.44
 urllib3==1.26.13
