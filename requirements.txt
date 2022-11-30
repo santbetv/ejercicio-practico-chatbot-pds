@@ -1,7 +1,6 @@
 certifi==2022.9.24
 charset-normalizer==2.0.12
 idna==3.4
-pkg-resources==0.0.0
 pyTelegramBotAPI==4.7.1
 python-decouple==3.6
 requests==2.27.1
