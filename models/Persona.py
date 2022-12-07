@@ -1,11 +1,12 @@
 import database.db as db
-from sqlalchemy import Column, Integer, String, Float, BOOLEAN, ForeignKey
+from sqlalchemy import Column, Identity, Integer, String, Float, BOOLEAN, ForeignKey
 from sqlalchemy.orm import relationship
 
 
 class Persona(db.Base):
     __tablename__ = 'tbl_Personas'
-    id = Column('idPersona', String(15), primary_key=True, nullable=False)
+    id = Column('idPersona', Integer, Identity(
+        start=0, cycle=True), primary_key=True, nullable=False)
     nombre = Column('nombrePersona', String(15), nullable=False)
     apellido = Column('apellidoPersona', String(
         15), nullable=False)
@@ -15,7 +16,7 @@ class Persona(db.Base):
         15), nullable=False)
     barrio = Column('barrioPersona', String(
         20), nullable=False)
-    idRol = Column('idRol', String(15), ForeignKey(
+    idRol = Column('idRol', Integer, ForeignKey(
         'tbl_Roles.idRol', onupdate='CASCADE'), nullable=False)
     Pedidos = relationship("Pedido", back_populates="Personas")
 

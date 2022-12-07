@@ -18,7 +18,7 @@ cursor = conn.cursor()
 # cursor.execute("INSERT INTO  tbl_Personas ( idPersona , nombrePersona , apellidoPersona , direccionPersona , telefonoPersona , barrioPersona , idRol ) VALUES (1,'Santiago','Betancur','calle 16 # 15 14','America','3146593910','1')");
 # cursor.execute("INSERT INTO  tbl_Personas ( idPersona , nombrePersona , apellidoPersona , direccionPersona , telefonoPersona , barrioPersona , idRol ) VALUES (2,'Sebastian','Gomez','calle 32 56 # 96','santander','3113710249','2')");
 
-# cursor.execute("INSERT INTO tbl_Menus(idMenu,descripcionMenu, estadoMenu) VALUES (1,'Menu Almuerzo','A')");
+# cursor.execute("INSERT INTO tbl_Menus(descripcionMenu, estadoMenu) VALUES ('Menu Almuerzo','A')");
 # cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (1,'Pasta','A', 1)");
 # cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (2,'Pescado','A', 1)");
 # cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (3,'Jugo','A', 1)");

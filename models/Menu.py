@@ -1,11 +1,12 @@
 import database.db as db
-from sqlalchemy import Column, Integer, String, Float, BOOLEAN
+from sqlalchemy import Column, Identity, Integer, String, Float, BOOLEAN
 from sqlalchemy.orm import relationship
 
 
 class Menu(db.Base):
     __tablename__ = 'tbl_Menus'
-    id = Column('idMenu', String(15), primary_key=True, nullable=False)
+    id = Column('idMenu', Integer, Identity(
+        start=0, cycle=True), primary_key=True, nullable=False)
     descripcion = Column('descripcionMenu', String(
         50), server_default='0', nullable=False)
     estado = Column('estadoMenu',  String(

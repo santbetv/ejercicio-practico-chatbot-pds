@@ -1,20 +1,20 @@
 
 import database.db as db
-from sqlalchemy import Column, Integer, String, Float, BOOLEAN, ForeignKey
+from sqlalchemy import Column, Identity, Integer, String, Float, BOOLEAN, ForeignKey
 from sqlalchemy.orm import relationship
 
 
 class Pedido(db.Base):
     __tablename__ = 'tbl_Pedidos'
-    id = Column('idPedido', String(15),
-                primary_key=True, nullable=False)
+    id = Column('idPedido', Integer, Identity(
+        start=0, cycle=True), primary_key=True, nullable=False)
     direccion = Column('direccionPedido', String(100),
                        nullable=False)
     estado = Column('estadoPedido', String(100),
                     nullable=False)
     valorTotal = Column('valorTotalPedido', String(100),
                     nullable=False)
-    IdPersona = Column('idPersona', String(15), ForeignKey(
+    IdPersona = Column('idPersona', Integer, ForeignKey(
         'tbl_Personas.idPersona', onupdate='CASCADE'), nullable=False)
 
     Personas = relationship("Persona", back_populates="Pedidos")
