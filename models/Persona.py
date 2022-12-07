@@ -13,7 +13,8 @@ class Persona(db.Base):
         15), nullable=False)
     telefono = Column('telefonoPersona', String(
         15), nullable=False)
-    barrio = Column('barrioPersona', Float, server_default='0', nullable=False)
+    barrio = Column('barrioPersona', String(
+        20), nullable=False)
     idRol = Column('idRol', String(15), ForeignKey(
         'tbl_Roles.idRol', onupdate='CASCADE'), nullable=False)
     Pedidos = relationship("Pedido", back_populates="Personas")

@@ -8,9 +8,15 @@ class ItemCategoria(db.Base):
     __tablename__ = 'tbl_ItemsCategoria'
     id = Column('idItemCategoria', String(15),
                 primary_key=True, nullable=False)
+    nombre = Column('nombreItemCategoria',  String(50),
+                         server_default='0', nullable=False)
     descripcion = Column('descripcionItemCategoria',  String(50),
                          server_default='0', nullable=False)
     estado = Column('estadoItemCategoria', BOOLEAN,
+                    server_default='1', nullable=False)
+    precio = Column('precioItemCategoria', Integer,
+                    server_default='1', nullable=False)
+    descuento = Column('descuentoItemCategoria', Integer,
                     server_default='1', nullable=False)
     idItemCategoria = Column('idCategoria', String(15), ForeignKey(
         'tbl_Categorias.idCategoria', onupdate='CASCADE'), nullable=False)

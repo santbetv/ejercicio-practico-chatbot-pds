@@ -12,6 +12,8 @@ class Pedido(db.Base):
                        nullable=False)
     estado = Column('estadoPedido', String(100),
                     nullable=False)
+    valorTotal = Column('valorTotalPedido', String(100),
+                    nullable=False)
     IdPersona = Column('idPersona', String(15), ForeignKey(
         'tbl_Personas.idPersona', onupdate='CASCADE'), nullable=False)
 
