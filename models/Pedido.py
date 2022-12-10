@@ -20,11 +20,11 @@ class Pedido(db.Base):
     Personas = relationship("Persona", back_populates="Pedidos")
     ItemsCategoriaPedido = relationship("ItemsCategoriaPedido", back_populates="Pedidos")
 
-    def __init__(self, id, direccion, estado, idPersona):
-        self.id = id
+    def __init__(self, direccion, estado, valorTotal, idPersona):
         self.direccion = direccion
         self.estado = estado
-        self.idPersona = idPersona
+        self.valorTotal = valorTotal
+        self.IdPersona= idPersona
 
     def __repr__(self):
         return f"<Pedido {self.id}>"

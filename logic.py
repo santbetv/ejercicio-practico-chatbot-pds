@@ -1,4 +1,6 @@
 import database.db as db
+from telebot import types
+from sqlalchemy.sql.expression import func
 from models.Menu import Menu
 from models.Categoria import Categoria
 from models.ItemCategoria import ItemCategoria
@@ -95,6 +97,10 @@ def listar_Categorias_X_Estado(estado):
     Categorias = db.session.query(Categoria).filter_by(estado=estado)
     return Categorias
 
+def listaUsuarioXCedula(cedula):
+    persona = db.session.query(Persona).filter_by(cedula=cedula)
+    return persona
+
 
 def Guardarcategoria(descripcion):
     categoria = Categoria(descripcion, 1)
@@ -110,6 +116,36 @@ def GuardarPlatos(item):
     db.session.commit()
     return True
 
+""" tipos de estados Pendiente, En proceso, Entregado o Cancelado"""
+def guardarPago(item):
+    valorPrecio=0
+    valorUltimodatoPedido=0
+    idPersona=0
+    persona = listaUsuarioXCedula(item['persona']['cedula'])
+    for i in persona:
+        idPersona=i.id
+    print(idPersona)
+    if (idPersona==0):
+        return "Usuario no registrado, Registrate .:."
+    else:
+        itemPrecio = db.session.query(Categoria, ItemCategoria).join(ItemCategoria).filter(ItemCategoria.id==item['itemcategoria']['id'])
+        for c, i in itemPrecio:
+            valorPrecio=i.precio
+        if (valorPrecio==0):
+            return "Validar Producto agregado"
+        else:
+            pedido = Pedido(str(item['pedido']['direccion']),'Pendiente', str(valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
+            db.session.add(pedido)
+            db.session.commit()
+            itemPedido= db.session.query(func.max(Pedido.id).label("maxid"))
+            for i in itemPedido:
+                valorUltimodatoPedido=i.maxid
+            print(i.maxid)
+            itemCategoriaPedido = ItemsCategoriaPedido(str(valorUltimodatoPedido),item['itemcategoria']['id'])
+            db.session.add(itemCategoriaPedido)
+            db.session.commit()
+            return "Se pago correctamente"
+
 
 def EditarCategoria(idcategoria, campo, valor):
     categoria = db.session.query(Categoria).get(idcategoria)
@@ -122,6 +158,32 @@ def EditarCategoria(idcategoria, campo, valor):
         categoria.estado = False if categoria.estado else True
     db.session.commit()
     return True
+
+
+def pintarCategoriasPlatos():
+    Categorias = db.session.query(Categoria).all()
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 1
+    inicia="/list_"
+    for c in Categorias:
+        markup.add(types.InlineKeyboardButton(c.descripcion, callback_data=inicia+c.descripcion))
+    return markup
+
+def pintarProductos(id):
+    items = db.session.query(Categoria, ItemCategoria).join(ItemCategoria).filter(Categoria.id==id)
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 1
+    inicia="/list_"
+    for c, i in items:
+        markup.add(types.InlineKeyboardButton("id"+str(i.id)+" Producto: "+i.nombre+" Costo: "+str(i.precio), callback_data="/cantidad_producto"))
+        #print("id: {} descripcion: {}".format(c.id, c.descripcion))
+    return markup
+
+def pintarBotones(nombreBoton, ruta):
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 1
+    markup.add(types.InlineKeyboardButton(nombreBoton, callback_data=ruta))
+    return markup
 
 
 def listar_id(id):

@@ -19,8 +19,7 @@ class ItemsCategoriaPedido(db.Base):
     ItemCategoria = relationship(
         "ItemCategoria", back_populates="ItemsCategoriaPedido")
 
-    def __init__(self, id, idPedido,  idItemCategoria):
-        self.id = id
+    def __init__(self, idPedido,  idItemCategoria):
         self.idPedido = idPedido        
         self.idItemCategoria = idItemCategoria
 

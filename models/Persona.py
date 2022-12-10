@@ -7,6 +7,7 @@ class Persona(db.Base):
     __tablename__ = 'tbl_Personas'
     id = Column('idPersona', Integer, Identity(
         start=0, cycle=True), primary_key=True, nullable=False)
+    cedula = Column('cedulaPersona', String(20), nullable=False)
     nombre = Column('nombrePersona', String(15), nullable=False)
     apellido = Column('apellidoPersona', String(
         15), nullable=False)
@@ -22,8 +23,8 @@ class Persona(db.Base):
 
     Roles = relationship("Rol", back_populates="Personas")
 
-    def __init__(self, id, nombre, apellido, direccion, telefono, barrio, idRol):
-        self.id = id
+    def __init__(self, cedula, nombre, apellido, direccion, telefono, barrio, idRol):
+        self.cedula=cedula
         self.nombre = nombre
         self.apellido = apellido
         self.direccion = direccion
