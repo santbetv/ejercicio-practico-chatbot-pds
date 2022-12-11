@@ -199,11 +199,11 @@ def callback_query(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/listar_plato')
 def callback_query_listar_plato(call):
-    #TODO revisar donde inicializar este dato para que funcione y no salga el error del usuario
+    # TODO revisar donde inicializar este dato para que funcione y no salga el error del usuario
     bot_data[call.message.chat.id] = {}
     bot_data[call.message.chat.id]['Pedido'] = {}
     bot_data[call.message.chat.id]['Pedido']['Productos'] = []
-    items = logic.listar_Categorias_itemCategorias_Id()
+    items = logic.listar_Categorias_itemCategorias()
     # print(items)
     text = logic.getMessageCategoriasItems(items)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
@@ -220,7 +220,7 @@ def callback_query_agregar_plato(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Agregar_PlatoCarrito')
 def callback_query_AgregarPlatoCarrito(call):
-    
+
     markup = logic.pintarCategoriasPlatos()
     response = bot.send_message(
         call.message.chat.id, "¿Elija la categoria del producto?:", reply_markup=markup)
@@ -235,9 +235,13 @@ def callback_query_listar_pasta(call):
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/comprar_producto')
-def callback_query_listar_bebida(message):
-    response = bot.reply_to(message, '¿Indique la Cedula del comprador?')
-    bot.register_next_step_handler(response, tipoProducto)
+def callback_query_listar_bebida(call):
+    #TODO listar pedido
+    logic.listarPedidoTemp(bot_data[call.message.chat.id]['Pedido']['Productos'])
+    response = bot.send_message(call.message.chat.id,
+                                '¿Indique la Cedula del comprador?')
+    # bot.register_next_step_handler(response, compradorCedula)
+
 
 @bot.callback_query_handler(func=lambda q: q.data == '/list_Jugo')
 def callback_query_listar_bebida(call):
@@ -298,11 +302,9 @@ def pedidoCat(message):
 def tipoProducto(message):
     try:
         # agregarlos 1 a 1
-        bot_data[message.chat.id]['Pedido']['Productos'].append(
-            {
-                "idProd": message.text.split('-')[0],
-                "Cantidad": 0
-            })
+        bot_data[message.chat.id]['Pedido']['UltimoProd'] = message.text.split(
+            '-')[0]
+
         response = bot.reply_to(message, '¿Indique la Cantidad del producto?')
         bot.register_next_step_handler(response, cantidadProductos)
     except Exception as e:
@@ -311,12 +313,19 @@ def tipoProducto(message):
 
 def cantidadProductos(message):
     try:
+        notexist = True
+        for data in bot_data[message.chat.id]['Pedido']['Productos']:
+            if data["idProd"] == bot_data[message.chat.id]['Pedido']['UltimoProd']:
+                notexist = False
+                data["Cantidad"] += int(message.text)
+        print(notexist)
+        if notexist:
+            bot_data[message.chat.id]['Pedido']['Productos'].append(
+                {
+                    "idProd": bot_data[message.chat.id]['Pedido']['UltimoProd'],
+                    "Cantidad": int(message.text)
+                })
         print(bot_data[message.chat.id]['Pedido']['Productos'])
-        for prod in bot_data[message.chat.id]['Pedido']['Productos']:
-            if int(message.text) > 0:
-                prod["Cantidad"] = int(message.text)
-            else:  # mostrar mensahe de error y  llamar de nnuevo la cantidad
-                pass
         bot.reply_to(
             message, 'Su producto se a añadido correctamente')
         # response = bot.reply_to(message, '¿Indique la Cedula del comprador?')
@@ -326,8 +335,7 @@ def cantidadProductos(message):
 
 def compradorCedula(message):
     try:
-        bot_data[message.chat.id]['persona'] = {}
-        bot_data[message.chat.id]['persona']['cedula'] = message.text
+        bot_data[message.chat.id]['Pedido']['Cedula'] = message.text
         response = bot.reply_to(message, '¿Indique la Direccion del pedido?')
         bot.register_next_step_handler(response, direccionComprador)
     except Exception as e:
@@ -336,8 +344,7 @@ def compradorCedula(message):
 
 def direccionComprador(message):
     try:
-        bot_data[message.chat.id]['pedido'] = {}
-        bot_data[message.chat.id]['pedido']['direccion'] = message.text
+        bot_data[message.chat.id]['Pedido']['Direccion'] = message.text
         pagarProductos(message)
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió: {e}")
@@ -394,29 +401,29 @@ def GuardarPlatos(message):
         bot.send_message(
             message.chat.id, "Se ha guardado el plato correctamente correctamente")
 
+##TODO completar funcionalidad del editar 
+# def EditarPlato(message, id=None):
+#     try:
+#         if id == None:
+#             id = message.text
+#         ItemCategoria = logic.listar_Categorias_itemCategorias(id)
+#         text = logic.getMessageCategoriasItems(ItemCategoria)
+#         bot.reply_to(message, text, parse_mode="Markdown")
 
-def EditarPlato(message, id=None):
-    try:
-        if id == None:
-            id = message.text
-        ItemCategoria = logic.listar_Categorias_itemCategorias_Id(id)
-        text = logic.getMessageCategoriasItems(ItemCategoria)
-        bot.reply_to(message, text, parse_mode="Markdown")
+#         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+#         markup.add('Nombre', 'Descripcion', 'Estado', 'Precio', 'Categoria')
 
-        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        markup.add('Nombre', 'Descripcion', 'Estado', 'Precio', 'Categoria')
+#         response = bot.send_message(message.chat.id,
+#                                     "Elije el campo que deseas editar", reply_markup=markup)
+#         bot_data[message.chat.id] = {}
+#         bot_data[message.chat.id]['idProdEditar'] = id
 
-        response = bot.send_message(message.chat.id,
-                                    "Elije el campo que deseas editar", reply_markup=markup)
-        bot_data[message.chat.id] = {}
-        bot_data[message.chat.id]['idProdEditar'] = id
+#         bot.register_next_step_handler(
+#             response, EditarcategoriaXtipo)
 
-        bot.register_next_step_handler(
-            response, EditarcategoriaXtipo)
-
-    except Exception as e:
-        bot.reply_to(
-            message, f"Algo terrible sucedió en la edicion de los productos: {e}")
+#     except Exception as e:
+#         bot.reply_to(
+#             message, f"Algo terrible sucedió en la edicion de los productos: {e}")
 
 
 def Editarcategoria(message, id=None):

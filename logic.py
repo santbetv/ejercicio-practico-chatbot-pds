@@ -9,6 +9,7 @@ from models.Pedido import Pedido
 from models.Rol import Rol
 from models.ItemsCategoriaPedido import ItemsCategoriaPedido
 import database.sql_restaurante as crearLimpiar
+import numpy as np
 
 
 def Createmenu():
@@ -66,12 +67,21 @@ def listar_Categorias():
     return Categorias
 
 
-def listar_Categorias_itemCategorias_Id():
+def listar_Categorias_itemCategorias():
     items = db.session.query(
         Categoria, ItemCategoria).join(ItemCategoria).all()
     for c, i in items:
         print("plato: {} categoria: {} precio: {} estado: {} ".format(
             i.nombre, c.descripcion, i.precio, "Activo" if i.estado else "Inactivo"))
+    return items
+
+
+def listar_Categorias_itemCategorias_ByID(id):
+    items = db.session.query(
+        ItemCategoria, Categoria).join(ItemCategoria).filter_by(id=id)
+    # for c, i in items:
+    #     print("plato: {} categoria: {} precio: {} estado: {} ".format(
+    #         i.nombre, c.descripcion, i.precio, "Activo" if i.estado else "Inactivo"))
     return items
 
 
@@ -90,6 +100,19 @@ def getMessageCategoriasItems(items):
     for Categoria, item in items:
         text += f'| {item.id} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
     text += "```"
+    return text
+
+
+def listarPedidoTemp(pedido):
+    text = "``` Listado del pedido:\n\n"
+    text += '| ID | Nombre | Precio | Cant \n'
+    for item in pedido:
+        print(item)
+        prod = listar_Categorias_itemCategorias_ByID(item["idProd"])[0][0]
+        print(prod)
+        # text += f'| {item.id} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
+        # text += f'| {} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
+    # text += "```"
     return text
 
 
@@ -126,7 +149,7 @@ def guardarPago(item):
     valorPrecio = 0
     valorUltimodatoPedido = 0
     idPersona = 0
-    persona = listaUsuarioXCedula(item['persona']['cedula'])
+    persona = listaUsuarioXCedula(item['Persona']['Cedula'])
     for i in persona:
         idPersona = i.id
     print(idPersona)
@@ -140,7 +163,7 @@ def guardarPago(item):
         if (valorPrecio == 0):
             return "Validar Producto agregado"
         else:
-            pedido = Pedido(str(item['pedido']['direccion']), 'Pendiente', str(
+            pedido = Pedido(str(item['Pedido']['Direccion']), 'Pendiente', str(
                 valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
             db.session.add(pedido)
             db.session.commit()
@@ -201,9 +224,11 @@ def pintarBotones(markup, nombreBoton, ruta):
     markup.add(types.InlineKeyboardButton(nombreBoton, callback_data=ruta))
     return markup
 
+
 def listar_CategoriaXid(id):
-    Categorias=db.session.query(Categoria).filter_by(id = id)
+    Categorias = db.session.query(Categoria).filter_by(id=id)
     return Categorias
+
 
 def listar_PlatosXid(id):
     Itemcategoria = db.session.query(ItemCategoria).filter_by(id=id)
