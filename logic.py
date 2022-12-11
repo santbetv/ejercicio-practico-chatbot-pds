@@ -97,6 +97,7 @@ def listar_Categorias_X_Estado(estado):
     Categorias = db.session.query(Categoria).filter_by(estado=estado)
     return Categorias
 
+
 def listaUsuarioXCedula(cedula):
     persona = db.session.query(Persona).filter_by(cedula=cedula)
     return persona
@@ -108,40 +109,47 @@ def Guardarcategoria(descripcion):
     db.session.commit()
     return True
 
+
 def GuardarPlatos(item):
     print(item)
     itemCategoria = ItemCategoria(
-        item['nombre'], item['descripcion'], item['precio'],item['IdCategoria'])
+        item['nombre'], item['descripcion'], item['precio'], item['IdCategoria'])
     db.session.add(itemCategoria)
     db.session.commit()
     return True
 
+
 """ tipos de estados Pendiente, En proceso, Entregado o Cancelado"""
+
+
 def guardarPago(item):
-    valorPrecio=0
-    valorUltimodatoPedido=0
-    idPersona=0
+    valorPrecio = 0
+    valorUltimodatoPedido = 0
+    idPersona = 0
     persona = listaUsuarioXCedula(item['persona']['cedula'])
     for i in persona:
-        idPersona=i.id
+        idPersona = i.id
     print(idPersona)
-    if (idPersona==0):
+    if (idPersona == 0):
         return "Usuario no registrado, Registrate .:."
     else:
-        itemPrecio = db.session.query(Categoria, ItemCategoria).join(ItemCategoria).filter(ItemCategoria.id==item['itemcategoria']['id'])
+        itemPrecio = db.session.query(Categoria, ItemCategoria).join(
+            ItemCategoria).filter(ItemCategoria.id == item['itemcategoria']['id'])
         for c, i in itemPrecio:
-            valorPrecio=i.precio
-        if (valorPrecio==0):
+            valorPrecio = i.precio
+        if (valorPrecio == 0):
             return "Validar Producto agregado"
         else:
-            pedido = Pedido(str(item['pedido']['direccion']),'Pendiente', str(valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
+            pedido = Pedido(str(item['pedido']['direccion']), 'Pendiente', str(
+                valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
             db.session.add(pedido)
             db.session.commit()
-            itemPedido= db.session.query(func.max(Pedido.id).label("maxid"))
+            itemPedido = db.session.query(func.max(Pedido.id).label("maxid"))
             for i in itemPedido:
-                valorUltimodatoPedido=i.maxid
+                valorUltimodatoPedido = i.maxid
             print(i.maxid)
-            itemCategoriaPedido = ItemsCategoriaPedido(str(valorUltimodatoPedido),item['itemcategoria']['id'])
+            itemCategoriaPedido = ItemsCategoriaPedido(
+                str(valorUltimodatoPedido), item['itemcategoria']['id'])
             db.session.add(itemCategoriaPedido)
             db.session.commit()
             return "Se pago correctamente"
@@ -162,30 +170,38 @@ def EditarCategoria(idcategoria, campo, valor):
 
 def pintarCategoriasPlatos():
     Categorias = db.session.query(Categoria).all()
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
-    inicia="/list_"
+    # markup = types.InlineKeyboardMarkup()
+    # markup.row_width = 1
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+
+    inicia = "/list_"
     for c in Categorias:
-        markup.add(types.InlineKeyboardButton(c.descripcion, callback_data=inicia+c.descripcion))
+        # markup.add(types.InlineKeyboardButton(c.descripcion, callback_data=inicia+c.descripcion))
+        markup.add(f"{c.id}- {c.descripcion}")
     return markup
+
 
 def pintarProductos(id):
-    items = db.session.query(Categoria, ItemCategoria).join(ItemCategoria).filter(Categoria.id==id)
-    markup = types.InlineKeyboardMarkup()
+    items = db.session.query(Categoria, ItemCategoria).join(
+        ItemCategoria).filter(Categoria.id == id)
+    # markup = types.InlineKeyboardMarkup()
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    # markup.add('Descripcion', 'Estado')
+
     markup.row_width = 1
-    inicia="/list_"
+    inicia = "/list_"
     for c, i in items:
-        markup.add(types.InlineKeyboardButton("id"+str(i.id)+" Producto: "+i.nombre+" Costo: "+str(i.precio), callback_data="/cantidad_producto"))
-        #print("id: {} descripcion: {}".format(c.id, c.descripcion))
+        # markup.add(types.InlineKeyboardButton("id"+str(i.id)+" Producto: "+i.nombre+" Costo: "+str(i.precio), callback_data="/cantidad_producto"))
+        markup.add(f"{i.id}- {i.nombre} ${i.precio}")
+        # print("id: {} descripcion: {}".format(c.id, c.descripcion))
     return markup
 
-def pintarBotones(nombreBoton, ruta):
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
+
+def pintarBotones(markup, nombreBoton, ruta):
     markup.add(types.InlineKeyboardButton(nombreBoton, callback_data=ruta))
     return markup
 
 
 def listar_id(id):
-    Categorias = db.session.query(Categoria).filter_by(id=id)
+    Categorias=db.session.query(Categoria).filter_by(id = id)
     return Categorias
