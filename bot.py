@@ -199,6 +199,10 @@ def callback_query(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/listar_plato')
 def callback_query_listar_plato(call):
+    #TODO revisar donde inicializar este dato para que funcione y no salga el error del usuario
+    bot_data[call.message.chat.id] = {}
+    bot_data[call.message.chat.id]['Pedido'] = {}
+    bot_data[call.message.chat.id]['Pedido']['Productos'] = []
     items = logic.listar_Categorias_itemCategorias_Id()
     # print(items)
     text = logic.getMessageCategoriasItems(items)
@@ -216,9 +220,7 @@ def callback_query_agregar_plato(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Agregar_PlatoCarrito')
 def callback_query_AgregarPlatoCarrito(call):
-    bot_data[call.message.chat.id] = {}
-    bot_data[call.message.chat.id]['Pedido'] = {}
-    bot_data[call.message.chat.id]['Pedido']['Productos'] = []
+    
     markup = logic.pintarCategoriasPlatos()
     response = bot.send_message(
         call.message.chat.id, "¿Elija la categoria del producto?:", reply_markup=markup)
@@ -231,6 +233,11 @@ def callback_query_listar_pasta(call):
     bot.send_message(call.message.chat.id,
                      "¿Cuál Plato desea?:", reply_markup=markup)
 
+
+@bot.callback_query_handler(func=lambda q: q.data == '/comprar_producto')
+def callback_query_listar_bebida(message):
+    response = bot.reply_to(message, '¿Indique la Cedula del comprador?')
+    bot.register_next_step_handler(response, tipoProducto)
 
 @bot.callback_query_handler(func=lambda q: q.data == '/list_Jugo')
 def callback_query_listar_bebida(call):
@@ -266,6 +273,7 @@ def callback_query(call):
 
 def pedidoCat(message):
     try:
+        print("pedidocat")
         markup = logic.pintarProductos(message.text.split('-')[0])
         response = bot.send_message(message.chat.id,
                                     "¿que producto de la categoria desea?:", reply_markup=markup)
@@ -292,27 +300,28 @@ def tipoProducto(message):
         # agregarlos 1 a 1
         bot_data[message.chat.id]['Pedido']['Productos'].append(
             {
-                id: message.text.split('-')[0],
-                Cantidad: ""
+                "idProd": message.text.split('-')[0],
+                "Cantidad": 0
             })
         response = bot.reply_to(message, '¿Indique la Cantidad del producto?')
         bot.register_next_step_handler(response, cantidadProductos)
     except Exception as e:
-        bot.reply_to(message, f"Algo terrible sucedió: {e}")
+        bot.reply_to(message, f"Algo terrible sucedió 1: {e}")
 
 
 def cantidadProductos(message):
     try:
+        print(bot_data[message.chat.id]['Pedido']['Productos'])
         for prod in bot_data[message.chat.id]['Pedido']['Productos']:
-            if message.text > 0:
-                prod.Cantidad = message.text
+            if int(message.text) > 0:
+                prod["Cantidad"] = int(message.text)
             else:  # mostrar mensahe de error y  llamar de nnuevo la cantidad
                 pass
         bot.reply_to(
             message, 'Su producto se a añadido correctamente')
         # response = bot.reply_to(message, '¿Indique la Cedula del comprador?')
     except Exception as e:
-        bot.reply_to(message, f"Algo terrible sucedió: {e}")
+        bot.reply_to(message, f"Algo terrible sucedió aca: {e}")
 
 
 def compradorCedula(message):
@@ -322,7 +331,7 @@ def compradorCedula(message):
         response = bot.reply_to(message, '¿Indique la Direccion del pedido?')
         bot.register_next_step_handler(response, direccionComprador)
     except Exception as e:
-        bot.reply_to(message, f"Algo terrible sucedió: {e}")
+        bot.reply_to(message, f"Algo terrible sucedió 0: {e}")
 
 
 def direccionComprador(message):
@@ -406,7 +415,8 @@ def EditarPlato(message, id=None):
             response, EditarcategoriaXtipo)
 
     except Exception as e:
-        bot.reply_to(message, f"Algo terrible sucedió en la edicion de los productos: {e}")
+        bot.reply_to(
+            message, f"Algo terrible sucedió en la edicion de los productos: {e}")
 
 
 def Editarcategoria(message, id=None):
