@@ -114,7 +114,9 @@ def callback_query_productos(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Pedidos')
 def callback_query_pedidos(call):
-    markup = logic.pintarBotones("Comprar un Plato","/cantidad_producto")
+    markup = logic.pintarBotones("Agregar al carrito","/cantidad_producto")
+    markup = logic.pintarBotones("Comprar platos","/comprar_producto")
+    markup = logic.pintarBotones("Listar platos comprados 20","/")
     bot.send_message(call.message.chat.id,
                      "Elije la opcion que deseas ver:", reply_markup=markup)
 
