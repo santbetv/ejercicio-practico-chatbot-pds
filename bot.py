@@ -184,9 +184,22 @@ def callback_query_editar_categoria(call):
     bot.register_next_step_handler(response, Editarcategoria)
 
 
+@bot.callback_query_handler(func=lambda q: q.data == '/Productos')
+def callback_query(call):
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 1
+    markup.add(types.InlineKeyboardButton("Listar Platos", callback_data="/listar_plato"),
+               types.InlineKeyboardButton(
+                   "Agragar Plato", callback_data="/agregar_plato"),
+               types.InlineKeyboardButton("Editar Platos", callback_data="/Editar_plato"))
+
+    bot.send_message(call.message.chat.id,
+                     "Elije la opcion que deseas ver:", reply_markup=markup)
+
+
 @bot.callback_query_handler(func=lambda q: q.data == '/listar_plato')
 def callback_query_listar_plato(call):
-    items = logic.listar_Categorias_itemCategorias()
+    items = logic.listar_Categorias_itemCategorias_Id()
     # print(items)
     text = logic.getMessageCategoriasItems(items)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
@@ -238,6 +251,14 @@ def callback_query_cantidad_plato(call):
     response = bot.send_message(
         call.message.chat.id, "¿Indique el id del producto?")
     bot.register_next_step_handler(response, tipoProducto)
+
+
+@ bot.callback_query_handler(func=lambda q: q.data == '/editar_Producto_id')
+def callback_query(call):
+    response = bot.send_message(call.message.chat.id,
+                                "¿Cuál ID quieres editar?")
+
+    bot.register_next_step_handler(response, Editarcategoria)
 
 
 """ Metodos-------------------------------------------------------------------------"""
@@ -365,11 +386,34 @@ def GuardarPlatos(message):
             message.chat.id, "Se ha guardado el plato correctamente correctamente")
 
 
+def EditarPlato(message, id=None):
+    try:
+        if id == None:
+            id = message.text
+        ItemCategoria = logic.listar_Categorias_itemCategorias_Id(id)
+        text = logic.getMessageCategoriasItems(ItemCategoria)
+        bot.reply_to(message, text, parse_mode="Markdown")
+
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+        markup.add('Nombre', 'Descripcion', 'Estado', 'Precio', 'Categoria')
+
+        response = bot.send_message(message.chat.id,
+                                    "Elije el campo que deseas editar", reply_markup=markup)
+        bot_data[message.chat.id] = {}
+        bot_data[message.chat.id]['idProdEditar'] = id
+
+        bot.register_next_step_handler(
+            response, EditarcategoriaXtipo)
+
+    except Exception as e:
+        bot.reply_to(message, f"Algo terrible sucedió en la edicion de los productos: {e}")
+
+
 def Editarcategoria(message, id=None):
     try:
         if id == None:
             id = message.text
-        Categorias = logic.listar_id(id)
+        Categorias = logic.listar_CategoriaXid(id)
         text = logic.getMessageCategorias(Categorias)
         bot.reply_to(message, text, parse_mode="Markdown")
 

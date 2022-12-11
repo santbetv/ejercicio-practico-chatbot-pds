@@ -66,7 +66,7 @@ def listar_Categorias():
     return Categorias
 
 
-def listar_Categorias_itemCategorias():
+def listar_Categorias_itemCategorias_Id():
     items = db.session.query(
         Categoria, ItemCategoria).join(ItemCategoria).all()
     for c, i in items:
@@ -201,7 +201,10 @@ def pintarBotones(markup, nombreBoton, ruta):
     markup.add(types.InlineKeyboardButton(nombreBoton, callback_data=ruta))
     return markup
 
-
-def listar_id(id):
+def listar_CategoriaXid(id):
     Categorias=db.session.query(Categoria).filter_by(id = id)
     return Categorias
+
+def listar_PlatosXid(id):
+    Itemcategoria = db.session.query(ItemCategoria).filter_by(id=id)
+    return Itemcategoria
