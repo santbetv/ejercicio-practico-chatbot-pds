@@ -1,6 +1,7 @@
 import database.db as db
 from telebot import types
 from sqlalchemy.sql.expression import func, desc
+from sqlalchemy import update
 from models.Menu import Menu
 from models.Categoria import Categoria
 from models.ItemCategoria import ItemCategoria
@@ -266,3 +267,10 @@ def listarPedidos(pedidos):
     else:
         text = "No hay pedidos asociados a este numero de cedula"
     return text
+
+def actulizarEstadoPedido(item,estado):
+    valor =db.session.query(Pedido).filter(Pedido.id == item).update({Pedido.estado:estado}, synchronize_session='evaluate')
+    if valor==0:
+        return False
+    db.session.commit()
+    return True

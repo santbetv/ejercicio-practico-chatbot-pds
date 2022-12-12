@@ -158,14 +158,6 @@ def callback_query_agregar_plato(call):
     response = bot.send_message(call.message.chat.id, "Nombre plato?")
     bot.register_next_step_handler(response, NombrePlato)
 
-
-@bot.callback_query_handler(func=lambda q: q.data == '/edita_estado_pedido')
-def callback_query_editar_producto(call):
-    response = bot.send_message(
-        call.message.chat.id, "¿Indica el ID del pedido?")
-    bot.register_next_step_handler(response, editarPedidoEstado)
-
-
 @ bot.callback_query_handler(func=lambda q: q.data == '/Editar_plato')
 def callback_query(call):
     response = bot.send_message(call.message.chat.id,
@@ -173,6 +165,10 @@ def callback_query(call):
 
     bot.register_next_step_handler(response, Editarcategoria)
 
+@bot.callback_query_handler(func=lambda q: q.data == '/edita_estado_pedido')
+def callback_query_editar_producto(call):
+    response = bot.send_message(call.message.chat.id, "¿Indica el ID del pedido?")
+    bot.register_next_step_handler(response, indicarIdPedido)
 
 # --------------end Productos
 # ---------------Inicio Pedidos
@@ -254,6 +250,29 @@ def callback_query_cantidad_plato(call):
 """ Metodos-------------------------------------------------------------------------"""
 
 # ------------Inicio Pedidos
+
+def indicarIdPedido(message):
+    try:
+        logic.ValidatefieldinDict(bot_data,message.chat.id)
+        logic.ValidatefieldinDict(bot_data[message.chat.id], 'pedido')
+        bot_data[message.chat.id]['pedido']['id'] = message.text
+        
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+        markup.add('Pendiente', 'En proceso', 'Entregado', 'Cancelado')
+
+        response = bot.send_message(message.chat.id,"Elije el tipo de estado", reply_markup=markup)
+        bot.register_next_step_handler(response, indicarTipoDeEstado)
+    except Exception as e:
+        bot.reply_to(message, f"Algo terrible sucedió en la edicion de los productos: {e}")
+  
+def indicarTipoDeEstado(message):
+    try:
+        if logic.actulizarEstadoPedido(bot_data[message.chat.id]['pedido']['id'],message.text):
+            bot.send_message(message.chat.id, "Se ha Actualizado el pedido correctamente")
+        else:
+            bot.send_message(message.chat.id, "Valida de nuevo el tipo de Producto")
+    except Exception as e:
+        bot.reply_to(message, f"Algo terrible sucedió donde pensamos actualizar pedido: {e}")
 
 
 def ListarPedidosXCedula(message):
