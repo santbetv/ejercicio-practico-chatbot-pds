@@ -9,7 +9,6 @@ from models.Pedido import Pedido
 from models.Rol import Rol
 from models.ItemsCategoriaPedido import ItemsCategoriaPedido
 import database.sql_restaurante as crearLimpiar
-import numpy as np
 
 
 def Createmenu():
@@ -70,9 +69,9 @@ def listar_Categorias():
 def listar_Categorias_itemCategorias():
     items = db.session.query(
         Categoria, ItemCategoria).join(ItemCategoria).all()
-    for c, i in items:
-        print("plato: {} categoria: {} precio: {} estado: {} ".format(
-            i.nombre, c.descripcion, i.precio, "Activo" if i.estado else "Inactivo"))
+    # for c, i in items:
+    #     print("plato: {} categoria: {} precio: {} estado: {} ".format(
+    #         i.nombre, c.descripcion, i.precio, "Activo" if i.estado else "Inactivo"))
     return items
 
 
@@ -86,11 +85,14 @@ def listar_Categorias_itemCategorias_ByID(id):
 
 
 def getMessageCategorias(Categorias):
-    text = "``` Listado de Categorias:\n\n"
-    text += '| ID | Descripcion | Estado\n'
-    for Categoria in Categorias:
-        text += f'| {Categoria.id} | {Categoria.descripcion} | {"Activo" if Categoria.estado else "Inactivo"} \n'
-    text += "```"
+    if len(Categorias) > 0:
+        text = "``` Listado de Categorias:\n\n"
+        text += '| ID | Descripcion | Estado\n'
+        for Categoria in Categorias:
+            text += f'| {Categoria.id} | {Categoria.descripcion} | {"Activo" if Categoria.estado else "Inactivo"} \n'
+        text += "```"
+    else:
+        text = "No hay categorias por listar"
     return text
 
 
@@ -104,15 +106,19 @@ def getMessageCategoriasItems(items):
 
 
 def listarPedidoTemp(pedido):
-    text = "``` Listado del pedido:\n\n"
-    text += '| ID | Nombre | Precio | Cant \n'
-    for item in pedido:
-        print(item)
-        prod = listar_Categorias_itemCategorias_ByID(item["idProd"])[0][0]
-        print(prod)
-        # text += f'| {item.id} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
-        # text += f'| {} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
-    # text += "```"
+    if len(pedido) > 0:
+        text = "``` Listado del pedido:\n\n"
+        text += '| ID | Nombre | Precio | Cant \n'
+        total = 0
+        for item in pedido:
+            prod = listar_Categorias_itemCategorias_ByID(item["idProd"])[0][0]
+            text += f'| {prod.id} | {prod.nombre} | {prod.precio} | {item["Cantidad"]} \n'
+            total += (prod.precio*item["Cantidad"])
+            # text += f'| {} | {item.nombre} | {item.precio} | {"Activo"  if item.estado else "Inactivo"} \n'
+
+        text += f"Total: ${total}```"
+    else:
+        text = 'Aun no tiene datos en el pedido'
     return text
 
 
@@ -133,7 +139,7 @@ def Guardarcategoria(descripcion):
     return True
 
 
-def GuardarPlatos(item):
+def GuardarPlato(item):
     print(item)
     itemCategoria = ItemCategoria(
         item['nombre'], item['descripcion'], item['precio'], item['IdCategoria'])
@@ -191,32 +197,23 @@ def EditarCategoria(idcategoria, campo, valor):
     return True
 
 
-def pintarCategoriasPlatos():
-    Categorias = db.session.query(Categoria).all()
-    # markup = types.InlineKeyboardMarkup()
-    # markup.row_width = 1
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-
-    inicia = "/list_"
+def pintarCategoriasPedido():
+    Categorias = db.session.query(Categoria).filter_by(estado=True)
+    markup = types.ReplyKeyboardMarkup(
+        one_time_keyboard=True, row_width=1, input_field_placeholder="Elija la Categoria del producto")
     for c in Categorias:
-        # markup.add(types.InlineKeyboardButton(c.descripcion, callback_data=inicia+c.descripcion))
         markup.add(f"{c.id}- {c.descripcion}")
     return markup
 
 
 def pintarProductos(id):
     items = db.session.query(Categoria, ItemCategoria).join(
-        ItemCategoria).filter(Categoria.id == id)
-    # markup = types.InlineKeyboardMarkup()
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    # markup.add('Descripcion', 'Estado')
-
+        ItemCategoria).filter(Categoria.id == id and ItemCategoria.estado == True)
+    markup = types.ReplyKeyboardMarkup(
+        row_width=1, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Elija el producto que desea Adicionar")
     markup.row_width = 1
-    inicia = "/list_"
     for c, i in items:
-        # markup.add(types.InlineKeyboardButton("id"+str(i.id)+" Producto: "+i.nombre+" Costo: "+str(i.precio), callback_data="/cantidad_producto"))
         markup.add(f"{i.id}- {i.nombre} ${i.precio}")
-        # print("id: {} descripcion: {}".format(c.id, c.descripcion))
     return markup
 
 
@@ -233,3 +230,16 @@ def listar_CategoriaXid(id):
 def listar_PlatosXid(id):
     Itemcategoria = db.session.query(ItemCategoria).filter_by(id=id)
     return Itemcategoria
+
+
+def BotonesEditarcategoria():
+    return ['Descripcion', 'Estado']
+
+
+def ValidatefieldinDict(dict, field, initValue={}):
+    try:
+        dict[field]
+        return dict
+    except:
+        dict[field] = initValue
+        return False

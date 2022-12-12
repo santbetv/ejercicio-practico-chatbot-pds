@@ -23,26 +23,6 @@ if __name__ == '__main__':
 bot_data = {}
 
 
-# class Record:
-#     def __init__(self):
-#         self['idcateditar'] = None
-#         self.itemcategoria = {}
-
-
-# @bot.message_handler(commands=['menu'])
-# def on_command_start(message):
-#     bot.send_chat_action(message.chat.id, 'typing')
-#     sleep(1)
-
-#     saludo = "menu creado"
-#     logic.Createmenu()
-
-#     bot.send_message(
-#         message.chat.id,
-#         saludo,
-#         parse_mode="Markdown")
-
-
 @bot.message_handler(commands=['test'])
 def on_command_test(message):
     bot.send_chat_action(message.chat.id, 'typing')
@@ -62,7 +42,6 @@ def on_command_test(message):
 
 @bot.message_handler(commands=['start'])
 def on_command_start(message):
-    # user_lang(message)
     bot.send_chat_action(message.chat.id, 'typing')
     sleep(1)
     saludo = ""
@@ -70,63 +49,36 @@ def on_command_start(message):
     # if logic.check_admin(message.from_user.id):
     saludo = logic.get_welcome_messageAdmin(bot.get_me())
     bot.send_message(message.chat.id, saludo, parse_mode="Markdown")
-
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
+    markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("Gestionar Categorias", callback_data="/Categorias"),
                types.InlineKeyboardButton(
                    "Gestionar Productos", callback_data="/Productos"),
                types.InlineKeyboardButton(
                    "Gestionar Pedidios", callback_data="/Pedidos"),
                types.InlineKeyboardButton("Help", callback_data="/help"))
-    # print(message.chat.id)
     bot.send_message(
         message.chat.id, "Selecciona una opción del menú:", reply_markup=markup)
+
+# --------------------Inicio Categorias
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Categorias')
 def callback_query_categorias(call):
     markup = types.InlineKeyboardMarkup()
     markup.row_width = 1
-    markup.add(types.InlineKeyboardButton("listar Categorias", callback_data="/listar_categoria"),
+    markup.add(types.InlineKeyboardButton("Listar Categorias", callback_data="/listar_categorias"),
                types.InlineKeyboardButton(
                    "Filtrar Categoria", callback_data="/buscar_Categoria"),
                types.InlineKeyboardButton(
                    "Editar categoria por id", callback_data="/editar_Categoria_id"),
                types.InlineKeyboardButton(
                    "Agragar Categoria", callback_data="/agregar_categoria"))
-
     bot.send_message(call.message.chat.id,
-                     "Elije la opcion que deseas ver:", reply_markup=markup)
+                     "Elije la opción que deseas ver:", reply_markup=markup)
 
 
-@bot.callback_query_handler(func=lambda q: q.data == '/Productos')
-def callback_query_productos(call):
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
-    markup.add(types.InlineKeyboardButton(
-        "Listar Platos", callback_data="/listar_plato"),
-        types.InlineKeyboardButton("Agragar Plato", callback_data="/agregar_plato"))
-
-    bot.send_message(call.message.chat.id,
-                     "Elije la opcion que deseas ver:", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/Pedidos')
-def callback_query_pedidos(call):
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
-    logic.pintarBotones(markup, "Agregar al carrito",
-                        "/Agregar_PlatoCarrito")  # User
-    logic.pintarBotones(markup, "Fianlizar pedido",
-                        "/comprar_producto")  # user
-    logic.pintarBotones(markup, "Listar platos comprados 20", "/")  # user
-    bot.send_message(call.message.chat.id,
-                     "Elije la opcion que deseas ver:", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/listar_categoria')
-def callback_query_listar_categoria(call):
+@bot.callback_query_handler(func=lambda q: q.data == '/listar_categorias')
+def callback_query_listar_categorias(call):
     Categorias = logic.listar_Categorias()
     text = logic.getMessageCategorias(Categorias)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
@@ -135,7 +87,7 @@ def callback_query_listar_categoria(call):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/agregar_categoria')
 def callback_query_agregar_categoria(call):
-    text = "Ingresa la descripcion de la nueva categoria"
+    text = "Ingresa la descripción de la nueva categoria"
     response = bot.send_message(
         call.message.chat.id, text)
     bot.register_next_step_handler(response, guardarCategoria)
@@ -149,62 +101,54 @@ def guardarCategoria(message):
 
 @bot.callback_query_handler(func=lambda q: q.data == '/buscar_Categoria')
 def callback_query_buscar_categoria(call):
-    response = bot.reply_to(
+    bot.reply_to(
         call.message, "¿Por cuál estado quieres filtrar?")
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
+    markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("Acivas", callback_data="/list_catactivo"),
-               types.InlineKeyboardButton("Inactivos", callback_data="/list_catinactivo"))
-
+               types.InlineKeyboardButton("Inactivas", callback_data="/list_catinactivo"))
     bot.send_message(call.message.chat.id,
-                     "Elije la opcion que deseas ver:", reply_markup=markup)
-    # bot.register_next_step_handler(
-    #     response, valorbusqueda)
+                     "Elije la opción que deseas ver:", reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/list_catactivo')
-def on_command_ListActivo(call):
+def on_command_ListCatActivo(call):
     Categorias = logic.listar_Categorias_X_Estado(True)
     text = logic.getMessageCategorias(Categorias)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/list_catinactivo')
-def on_command_Inactivo(call):
+def on_command_ListCatInactivo(call):
     Categorias = logic.listar_Categorias_X_Estado(False)
     text = logic.getMessageCategorias(Categorias)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/editar_Categoria_id')
-def callback_query_editar_categoria(call):
+def callback_query_editar_categoria_id(call):
     response = bot.send_message(call.message.chat.id,
                                 "¿Cuál ID quieres editar?")
-
     bot.register_next_step_handler(response, Editarcategoria)
+# ---------------end categorias
+# --------------Inicio Productos
 
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Productos')
 def callback_query(call):
     markup = types.InlineKeyboardMarkup()
     markup.row_width = 1
-    markup.add(types.InlineKeyboardButton("Listar Platos", callback_data="/listar_plato"),
+    markup.add(types.InlineKeyboardButton("Listar Platos", callback_data="/listar_platos"),
                types.InlineKeyboardButton(
                    "Agragar Plato", callback_data="/agregar_plato"),
                types.InlineKeyboardButton("Editar Platos", callback_data="/Editar_plato"))
 
     bot.send_message(call.message.chat.id,
-                     "Elije la opcion que deseas ver:", reply_markup=markup)
+                     "Elije la opción que deseas ver:", reply_markup=markup)
 
 
-@bot.callback_query_handler(func=lambda q: q.data == '/listar_plato')
-def callback_query_listar_plato(call):
-    # TODO revisar donde inicializar este dato para que funcione y no salga el error del usuario
-    bot_data[call.message.chat.id] = {}
-    bot_data[call.message.chat.id]['Pedido'] = {}
-    bot_data[call.message.chat.id]['Pedido']['Productos'] = []
+@bot.callback_query_handler(func=lambda q: q.data == '/listar_platos')
+def callback_query_listar_platos(call):
     items = logic.listar_Categorias_itemCategorias()
-    # print(items)
     text = logic.getMessageCategoriasItems(items)
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown")
 
@@ -215,56 +159,7 @@ def callback_query_agregar_plato(call):
     bot.register_next_step_handler(response, NombrePlato)
 
 
-""" Compras-------------------------------------------------------------------------"""
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/Agregar_PlatoCarrito')
-def callback_query_AgregarPlatoCarrito(call):
-
-    markup = logic.pintarCategoriasPlatos()
-    response = bot.send_message(
-        call.message.chat.id, "¿Elija la categoria del producto?:", reply_markup=markup)
-    bot.register_next_step_handler(response, pedidoCat)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/list_Pasta')
-def callback_query_listar_pasta(call):
-    markup = logic.pintarProductos(1)
-    bot.send_message(call.message.chat.id,
-                     "¿Cuál Plato desea?:", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/comprar_producto')
-def callback_query_listar_bebida(call):
-    #TODO listar pedido
-    logic.listarPedidoTemp(bot_data[call.message.chat.id]['Pedido']['Productos'])
-    response = bot.send_message(call.message.chat.id,
-                                '¿Indique la Cedula del comprador?')
-    # bot.register_next_step_handler(response, compradorCedula)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/list_Jugo')
-def callback_query_listar_bebida(call):
-    markup = logic.pintarProductos(3)
-    bot.send_message(call.message.chat.id,
-                     "¿Cuál Bebida desea?:", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda q: q.data == '/cantidad_producto')
-def callback_query_cantidad_plato(call):
-
-    # print("pruebaaaaaaaaaaaaaaaaaaaaaa")
-    # valor=call.message.json['reply_markup']['inline_keyboard'][0][0]['text']
-    # valorId=valor[0:valor.find(' Producto')]
-    # bot_ = {}
-    # print("------------------------------------>: "+valorId.replace('id', ''))
-    # print(call.message)
-    response = bot.send_message(
-        call.message.chat.id, "¿Indique el id del producto?")
-    bot.register_next_step_handler(response, tipoProducto)
-
-
-@ bot.callback_query_handler(func=lambda q: q.data == '/editar_Producto_id')
+@ bot.callback_query_handler(func=lambda q: q.data == '/Editar_plato')
 def callback_query(call):
     response = bot.send_message(call.message.chat.id,
                                 "¿Cuál ID quieres editar?")
@@ -272,65 +167,106 @@ def callback_query(call):
     bot.register_next_step_handler(response, Editarcategoria)
 
 
+# --------------end Productos
+# ---------------Inicio Pedidos
+@bot.callback_query_handler(func=lambda q: q.data == '/Pedidos')
+def callback_query_pedidos(call):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    logic.pintarBotones(markup, "Agregar al carrito",
+                        "/Agregar_Plato_Carrito")  # User
+    logic.pintarBotones(markup, "Finalizar pedido",
+                        "/comprar_producto")  # user
+    logic.pintarBotones(markup, "Listar platos comprados 20", "/")  # user
+    bot.send_message(call.message.chat.id,
+                     "Elije la opción que deseas ver:", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda q: q.data == '/Agregar_Plato_Carrito')
+def callback_query_AgregarPlatoCarrito(call):
+    logic.ValidatefieldinDict(bot_data, call.message.chat.id)
+    logic.ValidatefieldinDict(bot_data[call.message.chat.id], 'Pedido')
+    logic.ValidatefieldinDict(
+        bot_data[call.message.chat.id]['Pedido'], 'Productos', [])
+    markup = logic.pintarCategoriasPedido()
+    response = bot.send_message(
+        call.message.chat.id, "¿Elija la categoria del producto?:", reply_markup=markup)
+    bot.register_next_step_handler(response, pedidoCat)
+
+
+@bot.callback_query_handler(func=lambda q: q.data == '/comprar_producto')
+def callback_query_Comprar_pedido(call):
+    text = logic.listarPedidoTemp(
+        bot_data[call.message.chat.id]['Pedido']['Productos'])
+    
+    bot.send_message(call.message.chat.id, text)
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton("Continuar Comprando", callback_data="/Agregar_Plato_Carrito"),
+               types.InlineKeyboardButton("Finalizar y Pagar", callback_data="/Finalizar_Pedido"))
+    bot.send_message(call.message.chat.id,
+                     "Elije la opción con la que deseas continuar:", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda q: q.data == '/Finalizar_Pedido')
+def callback_query_cantidad_plato(call):
+    response = bot.send_message(
+        call.message.chat.id, "Finalizacion pedido")
+    bot.register_next_step_handler(response, pedidoProducto)
+
+
+# -------------- Fin pedidos
+
+@bot.callback_query_handler(func=lambda q: q.data == '/Borrar_menu')
+def callback_query_BorrarMenu(call):
+    bot.send_message(call.message.chat.id, "",
+                     reply_markup=types.ReplyKeyboardRemove())
+
+
 """ Metodos-------------------------------------------------------------------------"""
+
+# ------------Inicio Pedidos
 
 
 def pedidoCat(message):
     try:
-        print("pedidocat")
         markup = logic.pintarProductos(message.text.split('-')[0])
         response = bot.send_message(message.chat.id,
                                     "¿que producto de la categoria desea?:", reply_markup=markup)
-        bot.register_next_step_handler(response, tipoProducto)
-        # if message.text == 'Descripcion':
-        #     response = bot.send_message(message.chat.id,
-        #                                 "Escribe el nuevo valor de la descripcion")
-        #     bot.register_next_step_handler(
-        #         response, EditarcategoriaDescripcion)
-        # elif message.text == 'Estado':
-        #     if logic.EditarCategoria(bot_data[message.chat.id]['idcateditar'], message.text, message.text):
-        #         bot.send_message(message.chat.id,
-        #                          "Se ha editado el estado correctamente")
-        # else:
-        #     bot.send_message(message.chat.id,
-        #                      "no has seleccionado una opcion valida")
-        #     Editarcategoria(message, bot_data[message.chat.id]['idcateditar'])
+        bot.register_next_step_handler(response, pedidoProducto)
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió donde pensamos: {e}")
 
 
-def tipoProducto(message):
+def pedidoProducto(message):
     try:
         # agregarlos 1 a 1
         bot_data[message.chat.id]['Pedido']['UltimoProd'] = message.text.split(
             '-')[0]
-
-        response = bot.reply_to(message, '¿Indique la Cantidad del producto?')
-        bot.register_next_step_handler(response, cantidadProductos)
+        response = bot.reply_to(
+            message, '¿Indique la cantidad del producto que desea?')
+        bot.register_next_step_handler(response, pedidoCantidadProducto)
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió 1: {e}")
 
 
-def cantidadProductos(message):
+def pedidoCantidadProducto(message):
     try:
         notexist = True
         for data in bot_data[message.chat.id]['Pedido']['Productos']:
             if data["idProd"] == bot_data[message.chat.id]['Pedido']['UltimoProd']:
                 notexist = False
                 data["Cantidad"] += int(message.text)
-        print(notexist)
         if notexist:
             bot_data[message.chat.id]['Pedido']['Productos'].append(
                 {
                     "idProd": bot_data[message.chat.id]['Pedido']['UltimoProd'],
                     "Cantidad": int(message.text)
                 })
-        print(bot_data[message.chat.id]['Pedido']['Productos'])
         bot.reply_to(
-            message, 'Su producto se a añadido correctamente')
-        # response = bot.reply_to(message, '¿Indique la Cedula del comprador?')
+            message, 'Su producto se a añadido correctamente', reply_markup=types.ReplyKeyboardRemove())
     except Exception as e:
-        bot.reply_to(message, f"Algo terrible sucedió aca: {e}")
+        response = bot.reply_to(
+            message, f"pusiste un valor incorrecto, intenta nuevamente")
+        bot.register_next_step_handler(response, pedidoCantidadProducto)
 
 
 def compradorCedula(message):
@@ -353,9 +289,12 @@ def direccionComprador(message):
 def pagarProductos(message):
     bot.send_message(message.chat.id, logic.guardarPago(
         bot_data[message.chat.id]))
+# -----------------Fin pedidos
 
 
 """--------------------------------------------------------------------------------------------------"""
+
+# ---------------Inicio Productos
 
 
 def NombrePlato(message):
@@ -363,7 +302,7 @@ def NombrePlato(message):
         bot_data[message.chat.id] = {}
         bot_data[message.chat.id]['itemcategoria'] = {}
         bot_data[message.chat.id]['itemcategoria']['nombre'] = message.text
-        response = bot.reply_to(message, '¿Indique descripcion del plato')
+        response = bot.reply_to(message, '¿Indique descripción del plato')
         bot.register_next_step_handler(response, ValidarDescripcion)
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió: {e}")
@@ -391,17 +330,17 @@ def ValidarPrecio(message):
 def ValidarcategoriaProd(message):
     try:
         bot_data[message.chat.id]['itemcategoria']['IdCategoria'] = message.text
-        GuardarPlatos(message)
+        GuardarPlato(message)
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió: {e}")
 
 
-def GuardarPlatos(message):
-    if logic.GuardarPlatos(bot_data[message.chat.id]['itemcategoria']):
+def GuardarPlato(message):
+    if logic.GuardarPlato(bot_data[message.chat.id]['itemcategoria']):
         bot.send_message(
             message.chat.id, "Se ha guardado el plato correctamente correctamente")
 
-##TODO completar funcionalidad del editar 
+# TODO completar funcionalidad del editar
 # def EditarPlato(message, id=None):
 #     try:
 #         if id == None:
@@ -424,6 +363,9 @@ def GuardarPlatos(message):
 #     except Exception as e:
 #         bot.reply_to(
 #             message, f"Algo terrible sucedió en la edicion de los productos: {e}")
+# ---------------Fin Producto
+
+# --------------Inicio Categorias
 
 
 def Editarcategoria(message, id=None):
@@ -435,7 +377,7 @@ def Editarcategoria(message, id=None):
         bot.reply_to(message, text, parse_mode="Markdown")
 
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        markup.add('Descripcion', 'Estado')
+        markup.add(logic.BotonesEditarcategoria())
 
         response = bot.send_message(message.chat.id,
                                     "Elije el campo que deseas editar", reply_markup=markup)
@@ -451,9 +393,9 @@ def Editarcategoria(message, id=None):
 
 def EditarcategoriaXtipo(message):
     try:
-        if message.text == 'Descripcion':
+        if message.text == 'Descripción':
             response = bot.send_message(message.chat.id,
-                                        "Escribe el nuevo valor de la descripcion")
+                                        "Escribe el nuevo valor de la descripción")
             bot.register_next_step_handler(
                 response, EditarcategoriaDescripcion)
         elif message.text == 'Estado':
@@ -462,20 +404,17 @@ def EditarcategoriaXtipo(message):
                                  "Se ha editado el estado correctamente")
         else:
             bot.send_message(message.chat.id,
-                             "no has seleccionado una opcion valida")
+                             "No has seleccionado una opción valida")
             Editarcategoria(message, bot_data[message.chat.id]['idcateditar'])
     except Exception as e:
         bot.reply_to(message, f"Algo terrible sucedió donde pensamos: {e}")
 
 
 def EditarcategoriaDescripcion(message):
-    if logic.EditarCategoria(bot_data[message.chat.id]['idcateditar'], "Descripcion", message.text):
+    if logic.EditarCategoria(bot_data[message.chat.id]['idcateditar'], "Descripción", message.text):
         bot.send_message(message.chat.id,
-                         "Se ha editado la descripcion correctamente")
-
-
-def EditarcategoriaEstado(message):
-    pass
+                         "Se ha editado la descripción correctamente")
+# ------------Manejo por defecto Handler
 
 
 @bot.message_handler(func=lambda message: True)
