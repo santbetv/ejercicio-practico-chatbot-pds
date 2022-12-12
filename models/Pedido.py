@@ -1,6 +1,6 @@
 
 import database.db as db
-from sqlalchemy import Column, Identity, Integer, String, Float, BOOLEAN, ForeignKey
+from sqlalchemy import Column, Identity, Integer, String, Float, BOOLEAN, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 
 
@@ -13,18 +13,20 @@ class Pedido(db.Base):
     estado = Column('estadoPedido', String(100),
                     nullable=False)
     valorTotal = Column('valorTotalPedido', String(100),
-                    nullable=False)
+                        nullable=False)
     IdPersona = Column('idPersona', Integer, ForeignKey(
         'tbl_Personas.idPersona', onupdate='CASCADE'), nullable=False)
-
+    fechaCreacion = Column('fechaCreacionItemCategoria', DateTime(
+        timezone=True), server_default=func.now())
     Personas = relationship("Persona", back_populates="Pedidos")
-    ItemsCategoriaPedido = relationship("ItemsCategoriaPedido", back_populates="Pedidos")
+    ItemsCategoriaPedido = relationship(
+        "ItemsCategoriaPedido", back_populates="Pedidos")
 
     def __init__(self, direccion, estado, valorTotal, idPersona):
         self.direccion = direccion
         self.estado = estado
         self.valorTotal = valorTotal
-        self.IdPersona= idPersona
+        self.IdPersona = idPersona
 
     def __repr__(self):
         return f"<Pedido {self.id}>"

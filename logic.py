@@ -1,6 +1,6 @@
 import database.db as db
 from telebot import types
-from sqlalchemy.sql.expression import func
+from sqlalchemy.sql.expression import func, desc
 from models.Menu import Menu
 from models.Categoria import Categoria
 from models.ItemCategoria import ItemCategoria
@@ -164,44 +164,24 @@ def GuardarPlato(item):
 
 
 def guardarPago(pedido):
-    valorPrecio = 0
-    valortotal = 0
-    valorUltimodatoPedido = 0
-
-    # idPersona = 0
-    # persona = listaUsuarioXCedula(item['Persona']['Cedula'])
-    # for i in persona:
-    #     idPersona = i.id
-    # print(idPersona)
-    #
-    for item in pedido["Productos"]:
-        itemPrecio = db.session.query(Categoria, ItemCategoria).join(
-            ItemCategoria).filter(ItemCategoria.id == item['idProd']).all()
-        for c, i in itemPrecio:
-            valortotal += i.precio * item['Cantidad']
-            # valorPrecio = i.precio
-        # if (valorPrecio == 0):
-        #     return "Validar Producto agregado"
-
-    pedido = Pedido(
-        pedido['Direccion'], "En proceso", valortotal, pedido['IdPersona'])
-    res = db.session.add(pedido)
-    print(res)
-    db.session.commit()
-    # else:
-    #     pedido = Pedido(str(item['Direccion']), 'Pendiente', str(
-    #         valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
-    #     db.session.add(pedido)
-    #     db.session.commit()
-    #     itemPedido = db.session.query(func.max(Pedido.id).label("maxid"))
-    #     for i in itemPedido:
-    #         valorUltimodatoPedido = i.maxid
-    #     print(i.maxid)
-    #     itemCategoriaPedido = ItemsCategoriaPedido(
-    #         str(valorUltimodatoPedido), item['itemcategoria']['id'])
-    #     db.session.add(itemCategoriaPedido)
-    #     db.session.commit()
-    #     return "Se pago correctamente"
+    try:
+        valortotal = 0
+        for item in pedido["Productos"]:
+            itemPrecio = db.session.query(Categoria, ItemCategoria).join(
+                ItemCategoria).filter(ItemCategoria.id == item['idProd']).all()
+            for c, i in itemPrecio:
+                valortotal += i.precio * item['Cantidad']
+        pedidoNuevo = Pedido(
+            pedido['Direccion'], "Pendiente", valortotal, pedido['IdPersona'])
+        db.session.add(pedidoNuevo)
+        db.session.commit()
+        for item in pedido["Productos"]:
+            var = ItemsCategoriaPedido(pedidoNuevo.id, item['idProd'])
+            db.session.add(var)
+            db.session.commit()
+        return "Se pago correctamente"
+    except Exception as e:
+        return f"Ocurrio un error: {e}"
 
 
 def EditarCategoria(idcategoria, campo, valor):
@@ -218,7 +198,8 @@ def EditarCategoria(idcategoria, campo, valor):
 
 
 def pintarCategoriasPedido():
-    Categorias = db.session.query(Categoria).filter(Categoria.estado == True).all()
+    Categorias = db.session.query(Categoria).filter(
+       not Categoria.estado == False).all()
     print(Categorias)
     markup = types.ReplyKeyboardMarkup(
         row_width=1, input_field_placeholder="Elija la Categoria del producto")
@@ -227,9 +208,13 @@ def pintarCategoriasPedido():
     return markup
 
 
-def pintarProductos(id):
+def ProductosXIdCat(id):
     items = db.session.query(Categoria, ItemCategoria).join(
         ItemCategoria).filter(Categoria.id == id and ItemCategoria.estado == True).all()
+    return items
+
+
+def pintarBtnProductos(items):
     markup = types.ReplyKeyboardMarkup(
         row_width=1, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Elija el producto que desea Adicionar")
     markup.row_width = 1
@@ -244,7 +229,7 @@ def pintarBotones(markup, nombreBoton, ruta):
 
 
 def listar_CategoriaXid(id):
-    Categorias = db.session.query(Categoria).filter(Categoria.id==id).all()
+    Categorias = db.session.query(Categoria).filter(Categoria.id == id).all()
     return Categorias
 
 
@@ -256,16 +241,28 @@ def listar_PlatosXid(id):
 def ValidatefieldinDict(dict, field, initValue={}):
     try:
         dict[field]
-        return dict
     except:
         dict[field] = initValue
-        return False
 
 
-def pintarPedidosPorCedula():
-    Categorias = db.session.query(Categoria).filter(Categoria.estado != False)
-    print(Categorias)
-    markup = types.ReplyKeyboardMarkup(row_width=1, input_field_placeholder="¿Cúal producto va editar?")
-    for c in Categorias:
-        markup.add(f"{c.id}- {c.descripcion}")
-    return markup
+def PedidosXCedula(cedula):
+    pedidos = db.session.query(Pedido).filter(
+        Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).all()
+    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()
+    print(pedidos)
+    for pedido in pedidos:
+        print(
+            f"id {pedido.id} | estado {pedido.estado} - valor {pedido.valorTotal}- fecha:{pedido.fechaCreacion}")
+    return pedidos
+
+
+def listarPedidos(pedidos):
+    if len(pedidos) > 0:
+        text = "``` Listado de Pedidos:\n\n"
+        text += '| ID | Estado | Valor | Fecha\n'
+        for pedido in pedidos:
+            text += f'| {pedido.id} | {pedido.estado} | {pedido.valorTotal} | {pedido.fechaCreacion}\n'
+        text += "```"
+    else:
+        text = "No hay pedidos asociados a este numero de cedula"
+    return text
