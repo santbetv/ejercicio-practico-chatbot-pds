@@ -18,9 +18,10 @@ class Categoria(db.Base):
 
     ItemCategoria = relationship("ItemCategoria", back_populates="Categoria")
 
-    def __init__(self, descripcion,  idMenuCategoria):        
-        self.descripcion = descripcion        
+    def __init__(self, descripcion,  idMenuCategoria, estado=True):
+        self.descripcion = descripcion
         self.idMenuCategoria = idMenuCategoria
+        self.estado = estado
 
     def __repr__(self):
         return f"<Categoria {self.id}, {self.descripcion}>"

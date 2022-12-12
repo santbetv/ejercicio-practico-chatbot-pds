@@ -77,7 +77,7 @@ def listar_Categorias_itemCategorias():
 
 def listar_Categorias_itemCategorias_ByID(id):
     items = db.session.query(
-        ItemCategoria, Categoria).join(ItemCategoria).filter_by(id=id)
+        ItemCategoria, Categoria).join(ItemCategoria).filter_by(id=id).all()
     # for c, i in items:
     #     print("plato: {} categoria: {} precio: {} estado: {} ".format(
     #         i.nombre, c.descripcion, i.precio, "Activo" if i.estado else "Inactivo"))
@@ -123,13 +123,25 @@ def listarPedidoTemp(pedido):
 
 
 def listar_Categorias_X_Estado(estado):
-    Categorias = db.session.query(Categoria).filter_by(estado=estado)
+    Categorias = db.session.query(Categoria).filter_by(estado=estado).all()
     return Categorias
 
 
 def listaUsuarioXCedula(cedula):
-    persona = db.session.query(Persona).filter_by(cedula=cedula)
+    persona = db.session.query(Persona).filter_by(cedula=cedula).all()
     return persona
+
+
+def GuardarPesona(personaCrear):
+    try:
+        persona = Persona(personaCrear["Cedula"], personaCrear["Nombre"],
+                          personaCrear["Direccion"], personaCrear["Telefono"])
+        db.session.add(persona)
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
 
 
 def Guardarcategoria(descripcion):
@@ -151,37 +163,45 @@ def GuardarPlato(item):
 """ tipos de estados Pendiente, En proceso, Entregado o Cancelado"""
 
 
-def guardarPago(item):
+def guardarPago(pedido):
     valorPrecio = 0
+    valortotal = 0
     valorUltimodatoPedido = 0
-    idPersona = 0
-    persona = listaUsuarioXCedula(item['Persona']['Cedula'])
-    for i in persona:
-        idPersona = i.id
-    print(idPersona)
-    if (idPersona == 0):
-        return "Usuario no registrado, Registrate .:."
-    else:
+
+    # idPersona = 0
+    # persona = listaUsuarioXCedula(item['Persona']['Cedula'])
+    # for i in persona:
+    #     idPersona = i.id
+    # print(idPersona)
+    #
+    for item in pedido["Productos"]:
         itemPrecio = db.session.query(Categoria, ItemCategoria).join(
-            ItemCategoria).filter(ItemCategoria.id == item['itemcategoria']['id'])
+            ItemCategoria).filter(ItemCategoria.id == item['idProd']).all()
         for c, i in itemPrecio:
-            valorPrecio = i.precio
-        if (valorPrecio == 0):
-            return "Validar Producto agregado"
-        else:
-            pedido = Pedido(str(item['Pedido']['Direccion']), 'Pendiente', str(
-                valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
-            db.session.add(pedido)
-            db.session.commit()
-            itemPedido = db.session.query(func.max(Pedido.id).label("maxid"))
-            for i in itemPedido:
-                valorUltimodatoPedido = i.maxid
-            print(i.maxid)
-            itemCategoriaPedido = ItemsCategoriaPedido(
-                str(valorUltimodatoPedido), item['itemcategoria']['id'])
-            db.session.add(itemCategoriaPedido)
-            db.session.commit()
-            return "Se pago correctamente"
+            valortotal += i.precio * item['Cantidad']
+            # valorPrecio = i.precio
+        # if (valorPrecio == 0):
+        #     return "Validar Producto agregado"
+
+    pedido = Pedido(
+        pedido['Direccion'], "En proceso", valortotal, pedido['IdPersona'])
+    res = db.session.add(pedido)
+    print(res)
+    db.session.commit()
+    # else:
+    #     pedido = Pedido(str(item['Direccion']), 'Pendiente', str(
+    #         valorPrecio*int(item['itemcategoria']['cantiadad'])), idPersona)
+    #     db.session.add(pedido)
+    #     db.session.commit()
+    #     itemPedido = db.session.query(func.max(Pedido.id).label("maxid"))
+    #     for i in itemPedido:
+    #         valorUltimodatoPedido = i.maxid
+    #     print(i.maxid)
+    #     itemCategoriaPedido = ItemsCategoriaPedido(
+    #         str(valorUltimodatoPedido), item['itemcategoria']['id'])
+    #     db.session.add(itemCategoriaPedido)
+    #     db.session.commit()
+    #     return "Se pago correctamente"
 
 
 def EditarCategoria(idcategoria, campo, valor):
@@ -198,9 +218,10 @@ def EditarCategoria(idcategoria, campo, valor):
 
 
 def pintarCategoriasPedido():
-    Categorias = db.session.query(Categoria).filter_by(estado=True)
+    Categorias = db.session.query(Categoria).filter(Categoria.estado == True).all()
+    print(Categorias)
     markup = types.ReplyKeyboardMarkup(
-        one_time_keyboard=True, row_width=1, input_field_placeholder="Elija la Categoria del producto")
+        row_width=1, input_field_placeholder="Elija la Categoria del producto")
     for c in Categorias:
         markup.add(f"{c.id}- {c.descripcion}")
     return markup
@@ -208,7 +229,7 @@ def pintarCategoriasPedido():
 
 def pintarProductos(id):
     items = db.session.query(Categoria, ItemCategoria).join(
-        ItemCategoria).filter(Categoria.id == id and ItemCategoria.estado == True)
+        ItemCategoria).filter(Categoria.id == id and ItemCategoria.estado == True).all()
     markup = types.ReplyKeyboardMarkup(
         row_width=1, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Elija el producto que desea Adicionar")
     markup.row_width = 1
@@ -223,17 +244,13 @@ def pintarBotones(markup, nombreBoton, ruta):
 
 
 def listar_CategoriaXid(id):
-    Categorias = db.session.query(Categoria).filter_by(id=id)
+    Categorias = db.session.query(Categoria).filter(Categoria.id==id).all()
     return Categorias
 
 
 def listar_PlatosXid(id):
-    Itemcategoria = db.session.query(ItemCategoria).filter_by(id=id)
+    Itemcategoria = db.session.query(ItemCategoria).filter_by(id=id).all()
     return Itemcategoria
-
-
-def BotonesEditarcategoria():
-    return ['Descripcion', 'Estado']
 
 
 def ValidatefieldinDict(dict, field, initValue={}):
@@ -243,3 +260,12 @@ def ValidatefieldinDict(dict, field, initValue={}):
     except:
         dict[field] = initValue
         return False
+
+
+def pintarPedidosPorCedula():
+    Categorias = db.session.query(Categoria).filter(Categoria.estado != False)
+    print(Categorias)
+    markup = types.ReplyKeyboardMarkup(row_width=1, input_field_placeholder="¿Cúal producto va editar?")
+    for c in Categorias:
+        markup.add(f"{c.id}- {c.descripcion}")
+    return markup
