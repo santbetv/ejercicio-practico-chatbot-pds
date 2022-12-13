@@ -1,0 +1,42 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+
+
+steps:
+- task: Docker@0
+  displayName: buildAndImage
+  inputs:
+    azureSubscription: 'BizSpark-Juan-Zapata (a05a63a3-512d-4771-a604-5a7e1c40602e)'
+    azureContainerRegistry: '{"loginServer":"acrmovinovaprod.azurecr.io", "id" : "/subscriptions/a05a63a3-512d-4771-a604-5a7e1c40602e/resourceGroups/cimovinovaprod/providers/Microsoft.ContainerRegistry/registries/acrmovinovaprod"}'
+    dockerFile: Dockerfile
+    imageName: 'TestBottelegram:$(Build.BuildId)'
+
+#Your build pipeline references an undefined variable named ‘ImageName’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+
+steps:
+- task: Docker@1
+  displayName: PushAndimage
+  inputs:
+    azureSubscriptionEndpoint: 'BizSpark-Juan-Zapata (a05a63a3-512d-4771-a604-5a7e1c40602e)'
+    azureContainerRegistry: acrmovinovaprod.azurecr.io
+    command: 'Push an image'
+    imageName: 'TestBottelegram:$(Build.BuildId)'
+
+steps:
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: publish'
+  inputs:
+    PathtoPublish: ./
+    ArtifactName: publish
+
