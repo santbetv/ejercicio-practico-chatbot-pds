@@ -18,10 +18,10 @@ cursor = conn.cursor()
 # cursor.execute("INSERT INTO  tbl_Personas ( idPersona ,cedulaPersona, nombrePersona , apellidoPersona , direccionPersona , telefonoPersona , barrioPersona , idRol ) VALUES (1,'1053831993','Santiago','Betancur','calle 16 # 15 14','America','3146593910','1')");
 # cursor.execute("INSERT INTO  tbl_Personas ( idPersona ,cedulaPersona, nombrePersona , apellidoPersona , direccionPersona , telefonoPersona , barrioPersona , idRol ) VALUES (2,'1053862416','Sebastian','Gomez','calle 32 56 # 96','santander','3113710249','2')");
 
-# cursor.execute("INSERT INTO tbl_Menus(idMenu,descripcionMenu, estadoMenu) VALUES (1,'Menu Almuerzo','A')");
-# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (1,'Pasta','A', 1)");
-# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (2,'Pescado','A', 1)");
-# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (3,'Jugo','A', 1)");
+# cursor.execute("INSERT INTO tbl_Menus(idMenu,descripcionMenu, estadoMenu) VALUES (1,'Menu Almuerzo',1)");
+# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (1,'Pasta',1, 1)");
+# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (2,'Pescado',1, 1)");
+# cursor.execute("INSERT INTO tbl_Categorias(idCategoria,descripcionCategoria, estadoCategoria, idMenuCategoria) VALUES (3,'Jugo',1, 1)");
 
 # cursor.execute("INSERT INTO tbl_ItemsCategoria(idItemCategoria,nombreItemCategoria,descripcionItemCategoria,precioItemCategoria,estadoItemCategoria, idCategoria) VALUES (1,'Pasta napolina','Con salsa de tomates fresco',20000,'A', 1)");
 # cursor.execute("INSERT INTO tbl_ItemsCategoria(idItemCategoria,nombreItemCategoria,descripcionItemCategoria,precioItemCategoria, estadoItemCategoria, idCategoria) VALUES (2,'Pasta italiana','Con champiñones de peru, y pollo de japon',35000,'A', 1)");

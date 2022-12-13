@@ -220,7 +220,7 @@ def pintarBtnProductos(items):
         row_width=1, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Elija el producto que desea Adicionar")
     markup.row_width = 1
     for c, i in items:
-        markup.add(f"{i.id}- {i.nombre} ${i.precio}")
+        markup.add(f"{i.id} - {i.nombre} - ${i.precio}")
     return markup
 
 
@@ -248,9 +248,8 @@ def ValidatefieldinDict(dict, field, initValue={}):
 
 def PedidosXCedula(cedula):
     pedidos = db.session.query(Pedido).filter(
-        Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).all()
-    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()
-    print(pedidos)
+        Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).limit(20).all()
+    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()    
     for pedido in pedidos:
         print(
             f"id {pedido.id} | estado {pedido.estado} - valor {pedido.valorTotal}- fecha:{pedido.fechaCreacion}")
