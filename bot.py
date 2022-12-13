@@ -59,19 +59,19 @@ def RolRestaurante(message):
     logic.ValidatefieldinDict(bot_data[message.chat.id], 'Rol', message.text)
     bot_data[message.chat.id]['Rol'] = message.text
     bot.send_message(
-        message.chat.id, "Registre tu rol correctamente", reply_markup=types.ReplyKeyboardRemove())
-    on_command_start(message)
-
+        message.chat.id, "Rol registrado correctamente", reply_markup=types.ReplyKeyboardRemove())
+    on_command_MenuPrincipal(message)
 
 def rol(message):
     return bot_data[message.chat.id]['Rol']
 
 
 @bot.message_handler(commands=['menu_principal'])
-def on_command_start(message):
+def on_command_MenuPrincipal(message):
+    logic.ValidatefieldinDict(bot_data, message.chat.id)
+    logic.ValidatefieldinDict(bot_data[message.chat.id], 'Rol')
     bot.send_chat_action(message.chat.id, 'typing')
-    if rol(message) == "Administrador":
-        # TODO valiar mensaje
+    if rol(message) == "Administrador":        
         saludo = logic.get_welcome_messageAdmin(bot.get_me())
         bot.send_message(message.chat.id, saludo, parse_mode="Markdown")
         markup = types.InlineKeyboardMarkup(row_width=1)
