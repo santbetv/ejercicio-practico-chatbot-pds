@@ -171,7 +171,7 @@ def guardarPago(pedido):
             itemPrecio = db.session.query(Categoria, ItemCategoria).join(
                 ItemCategoria).filter(ItemCategoria.id == item['idProd']).all()
             for c, i in itemPrecio:
-                valortotal += i.precio * item['Cantidad']
+                valortotal += multiplicarPorCantidad(i.precio,item['Cantidad'])
         pedidoNuevo = Pedido(
             pedido['Direccion'], "Pendiente", valortotal, pedido['IdPersona'])
         db.session.add(pedidoNuevo)
@@ -184,6 +184,8 @@ def guardarPago(pedido):
     except Exception as e:
         return f"Ocurrio un error: {e}"
 
+def multiplicarPorCantidad(precio,cantidad):
+    return precio * cantidad
 
 def EditarCategoria(idcategoria, campo, valor):
     categoria = db.session.query(Categoria).get(idcategoria)
@@ -274,6 +276,10 @@ def actulizarEstadoPedido(item,estado):
         return False
     db.session.commit()
     return True
+
+def listarPorEstadoPedido(estado):
+    items = db.session.query(Pedido).filter(Pedido.estado == estado).all()
+    return items
 
 def listarPorEstadoPedido(estado):
     items = db.session.query(Pedido).filter(Pedido.estado == estado).all()
