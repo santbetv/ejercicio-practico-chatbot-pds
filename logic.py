@@ -23,6 +23,12 @@ def Createmenu():
     return True
 
 
+def get_welcome_message(bot_data):
+    response = (
+        f"Hola, soy *{bot_data.first_name}* \n"
+        "¡Estoy aquí para ayudarte!"      
+    )
+    return response
 def get_welcome_messageAdmin(bot_data):
     response = (
         f"Hola, soy *{bot_data.first_name}* \n"
@@ -36,7 +42,7 @@ def get_welcome_messageAdmin(bot_data):
 def get_welcome_messageUser(bot_data):
     response = (
         f"Hola, soy *{bot_data.first_name}* "
-        "¡Estoy aquí para ayudarte, podrás: \n"
+        "¡Estoy aquí para ayudarte con tus pedidos y compras, podrás: \n"
         "- Consultar los platos del restaurante \n"
         "- Gestionar tu carrito de compras\n"
         "- Revisar tu historial de compras de los últimos 20 platos."
@@ -241,7 +247,7 @@ def listar_PlatosXid(id):
 
 def ValidatefieldinDict(dict, field, initValue={}):
     try:
-        dict[field]
+        dict[field]        
     except:
         dict[field] = initValue
 
