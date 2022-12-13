@@ -274,3 +274,7 @@ def actulizarEstadoPedido(item,estado):
         return False
     db.session.commit()
     return True
+
+def listarPorEstadoPedido(estado):
+    items = db.session.query(Pedido).filter(Pedido.estado == estado).all()
+    return items

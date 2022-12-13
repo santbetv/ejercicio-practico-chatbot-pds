@@ -183,6 +183,8 @@ def callback_query_pedidos(call):
                         "/Listar_Ultimos_Pedidos")  # user
     logic.pintarBotones(markup, "Editar estado pedido",
                         "/edita_estado_pedido")  # Admin
+    logic.pintarBotones(markup, "Listar pedidos por estado",
+                        "/estado_pedido")  # Admin
     bot.send_message(call.message.chat.id,
                      "Elije la opción que deseas ver:", reply_markup=markup)
 
@@ -244,6 +246,16 @@ def callback_query_cantidad_plato(call):
                          "Aun no has agregado productos al carrito")
 
 
+@bot.callback_query_handler(func=lambda q: q.data == '/estado_pedido')
+def callback_query_editar_categoria_id(call):
+    try:
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+        markup.add('Pendiente', 'En proceso', 'Entregado', 'Cancelado')
+
+        response = bot.send_message(call.message.chat.id,"Elije el tipo de estado", reply_markup=markup)
+        bot.register_next_step_handler(response, ejecutarCambioEstado)
+    except Exception as e:
+        bot.reply_to(call.message, f"Algo terrible sucedió en la edicion de los productos: {e}")
 # -------------- Fin pedidos
 
 
@@ -251,12 +263,17 @@ def callback_query_cantidad_plato(call):
 
 # ------------Inicio Pedidos
 
+def ejecutarCambioEstado(message):
+    try:
+        text = logic.listarPedidos(logic.listarPorEstadoPedido(message.text))
+        bot.send_message(message.chat.id, text, parse_mode="Markdown")
+    except Exception as e:
+        bot.reply_to(message, f"Algo terrible sucedió donde pensamos listarr pedido: {e}")
+
+
+
 def indicarIdPedido(message):
     try:
-        logic.ValidatefieldinDict(bot_data,message.chat.id)
-        logic.ValidatefieldinDict(bot_data[message.chat.id], 'pedido')
-        bot_data[message.chat.id]['pedido']['id'] = message.text
-        
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
         markup.add('Pendiente', 'En proceso', 'Entregado', 'Cancelado')
 
@@ -267,7 +284,7 @@ def indicarIdPedido(message):
   
 def indicarTipoDeEstado(message):
     try:
-        if logic.actulizarEstadoPedido(bot_data[message.chat.id]['pedido']['id'],message.text):
+        if logic.actulizarEstadoPedido(message.text):
             bot.send_message(message.chat.id, "Se ha Actualizado el pedido correctamente")
         else:
             bot.send_message(message.chat.id, "Valida de nuevo el tipo de Producto")
