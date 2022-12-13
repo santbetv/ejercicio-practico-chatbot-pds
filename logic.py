@@ -26,9 +26,11 @@ def Createmenu():
 def get_welcome_message(bot_data):
     response = (
         f"Hola, soy *{bot_data.first_name}* \n"
-        "¡Estoy aquí para ayudarte!"      
+        "¡Estoy aquí para ayudarte!"
     )
     return response
+
+
 def get_welcome_messageAdmin(bot_data):
     response = (
         f"Hola, soy *{bot_data.first_name}* \n"
@@ -177,7 +179,8 @@ def guardarPago(pedido):
             itemPrecio = db.session.query(Categoria, ItemCategoria).join(
                 ItemCategoria).filter(ItemCategoria.id == item['idProd']).all()
             for c, i in itemPrecio:
-                valortotal += multiplicarPorCantidad(i.precio,item['Cantidad'])
+                valortotal += multiplicarPorCantidad(
+                    i.precio, item['Cantidad'])
         pedidoNuevo = Pedido(
             pedido['Direccion'], "Pendiente", valortotal, pedido['IdPersona'])
         db.session.add(pedidoNuevo)
@@ -190,8 +193,10 @@ def guardarPago(pedido):
     except Exception as e:
         return f"Ocurrio un error: {e}"
 
-def multiplicarPorCantidad(precio,cantidad):
+
+def multiplicarPorCantidad(precio, cantidad):
     return precio * cantidad
+
 
 def EditarCategoria(idcategoria, campo, valor):
     categoria = db.session.query(Categoria).get(idcategoria)
@@ -208,7 +213,7 @@ def EditarCategoria(idcategoria, campo, valor):
 
 def pintarCategoriasPedido():
     Categorias = db.session.query(Categoria).filter(
-       not Categoria.estado == False).all()
+        not Categoria.estado == False).all()
     print(Categorias)
     markup = types.ReplyKeyboardMarkup(
         row_width=1, input_field_placeholder="Elija la Categoria del producto")
@@ -249,7 +254,7 @@ def listar_PlatosXid(id):
 
 def ValidatefieldinDict(dict, field, initValue={}):
     try:
-        dict[field]        
+        dict[field]
     except:
         dict[field] = initValue
 
@@ -257,11 +262,23 @@ def ValidatefieldinDict(dict, field, initValue={}):
 def PedidosXCedula(cedula):
     pedidos = db.session.query(Pedido).filter(
         Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).limit(20).all()
-    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()    
+    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()
     for pedido in pedidos:
         print(
             f"id {pedido.id} | estado {pedido.estado} - valor {pedido.valorTotal}- fecha:{pedido.fechaCreacion}")
     return pedidos
+
+
+def PedidosDetalleXId(Id):
+    productos = db.session.query(ItemCategoria).join(ItemsCategoriaPedido).join(
+        ItemsCategoriaPedido.idPedido == Pedido.id).where(Pedido.id == Id).all()
+    # Persona.cedula == cedula).filter(ItemsCategoriaPedido.idPedido == Pedido.id).filter(Pedido.IdPersona == Persona.id).order_by(desc(Pedido.fechaCreacion)).all()
+    print (productos)
+    for prod in productos:
+        print(prod)
+        # print(
+        # f"id {pedido.id} | estado {pedido.estado} - valor {pedido.valorTotal}- fecha:{pedido.fechaCreacion}")
+    return productos
 
 
 def listarPedidos(pedidos):
@@ -275,16 +292,20 @@ def listarPedidos(pedidos):
         text = "No hay pedidos asociados a este numero de cedula"
     return text
 
-def actulizarEstadoPedido(item,estado):
-    valor =db.session.query(Pedido).filter(Pedido.id == item).update({Pedido.estado:estado}, synchronize_session='evaluate')
-    if valor==0:
+
+def actulizarEstadoPedido(item, estado):
+    valor = db.session.query(Pedido).filter(Pedido.id == item).update(
+        {Pedido.estado: estado}, synchronize_session='evaluate')
+    if valor == 0:
         return False
     db.session.commit()
     return True
 
+
 def listarPorEstadoPedido(estado):
     items = db.session.query(Pedido).filter(Pedido.estado == estado).all()
     return items
+
 
 def listarPorEstadoPedido(estado):
     items = db.session.query(Pedido).filter(Pedido.estado == estado).all()

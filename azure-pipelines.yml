@@ -24,7 +24,6 @@ steps:
 
 #Your build pipeline references an undefined variable named ‘ImageName’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
 
-steps:
 - task: Docker@1
   displayName: PushAndimage
   inputs:
@@ -33,7 +32,6 @@ steps:
     command: 'Push an image'
     imageName: 'TestBottelegram:$(Build.BuildId)'
 
-steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: publish'
   inputs:

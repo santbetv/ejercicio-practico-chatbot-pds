@@ -98,6 +98,8 @@ def on_command_MenuPrincipal(message):
                             "/comprar_productos")  # use
         logic.pintarBotones(markup, "Ver tus ultimos 20 pedidos",
                             "/Listar_Ultimos_Pedidos")  # user
+        # logic.pintarBotones(markup, "Ver detalle de pedido por id",
+        #                     "/Detalle_Pedido_Id")  # user
         bot.send_message(
             message.chat.id, "Selecciona una opción del menú:", reply_markup=markup)
     else:
@@ -256,6 +258,12 @@ def callback_query_ListarUltimosPedidos(call):
                                 "Ingrese la cedula para consultar los pedidos")
     bot.register_next_step_handler(response, ListarPedidosXCedula)
 
+@bot.callback_query_handler(func=lambda q: q.data == '/Detalle_Pedido_Id')
+def callback_query_DetallePedidoID(call):
+    response = bot.send_message(call.message.chat.id,
+                                "Ingrese el ID del pedido que desea ver el detalle ")
+    bot.register_next_step_handler(response, ListarDetallePedidosXId)
+
 
 @bot.callback_query_handler(func=lambda q: q.data == '/Ver_Carrito')
 def callback_query_ListarCarrito(call):
@@ -392,6 +400,13 @@ def ListarPedidosXCedula(message):
     pedidos = logic.PedidosXCedula(message.text)
     text = logic.listarPedidos(pedidos)
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
+
+def ListarDetallePedidosXId(message):
+    
+    pedidos = logic.PedidosDetalleXId(message.text)
+    # text = logic.listarPedidos(pedidos)
+    # bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
 
 def pedidoCat(message):
